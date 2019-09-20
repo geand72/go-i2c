@@ -15,8 +15,8 @@ import (
 	"syscall"
 )
 
-const (
-	I2C_SLAVE = 0x0703
+var (
+	I2C_SLAVE uintptr = 0x0703
 )
 
 // I2C represents a connection to I2C-device.
