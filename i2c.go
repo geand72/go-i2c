@@ -64,6 +64,19 @@ func (v *I2C) WriteBytes(buf []byte) (int, error) {
 	return v.write(buf)
 }
 
+//*****************************************************************************
+//
+func (v *I2C) WriteBytesEE(eePage byte, eeAddr byte, buf []byte) (int, error) {
+	lg.Debugf("Write %d hex bytes: [%+v]", len(buf), hex.EncodeToString(buf))
+
+	b := make([]byte, len(buf)+2)
+	b[0] = eePage
+	b[1] = eeAddr
+	_ = copy(b[2:], buf)
+
+	return v.write(b)
+}
+
 func (v *I2C) read(buf []byte) (int, error) {
 	return v.rc.Read(buf)
 }
@@ -90,6 +103,25 @@ func (v *I2C) Close() error {
 func (v *I2C) ReadRegBytes(reg byte, n int) ([]byte, int, error) {
 	lg.Debugf("Read %d bytes starting from reg 0x%0X...", n, reg)
 	_, err := v.WriteBytes([]byte{reg})
+	if err != nil {
+		return nil, 0, err
+	}
+	buf := make([]byte, n)
+	c, err := v.ReadBytes(buf)
+	if err != nil {
+		return nil, 0, err
+	}
+	return buf, c, nil
+
+}
+
+func (v *I2C) ReadRegBytesEE(eePage, eeAddr byte, n int) ([]byte, int, error) {
+	lg.Debug("Read  bytes starting from reg 0xX...")
+	addr := make([]byte, 2)
+	addr[0] = eePage
+	addr[1] = eeAddr
+
+	_, err := v.WriteBytes(addr)
 	if err != nil {
 		return nil, 0, err
 	}
